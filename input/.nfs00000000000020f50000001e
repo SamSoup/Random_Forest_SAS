@@ -1,0 +1,7 @@
+11000.                       Df  Sum Sq Mean Sq F value Pr(>F)    
+oxygen_used             1   25813   25813 261.265 <2e-16 ***
+success                 1    9928    9928 100.492 <2e-16 ***
+oxygen_used:success     1      72      72   0.725  0.394    
+Residuals           20786 2053623      99                   
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
