@@ -4,7 +4,7 @@ options(scipen=10)
 
 my.args <- commandArgs(trailingOnly = T);
 
-my.para <- read.table(paste('./input/input',my.args[1],sep=''),header=F);
+my.para <- read.table(paste('input',my.args[1],sep=''),header=F);
 
 #Read in parameters from inputn, where n is the simulation number
 #Recombination rate per megabase (typically around 100rho/Mb, simulate under varying rho/Mb
@@ -24,10 +24,9 @@ rhoA = (siteA-6900000)/1000000*rho_Mb
 if(rhoA <3){
 	rhoA = 3
 }
-#List of neutral sites to initialize simulation - these don't matter for current version of code.
-neut = seq(0.1,rhoA+10,0.1)
+#List of neutral sites to initialize simulation - these don't matter much for the current version of code - longer chunks of chromosome end up being simulated with increased recombination
+neut = seq(0.1,450,0.1)
 #Just a check to avoid negative values of rho, this shouldn't ever happen, but somehow does
-# ρ = 4*N e* r,
 neut = neut[which(neut>0)]
 
 
@@ -40,7 +39,7 @@ cat('138604')#population size = 2N
 cat('\n')
 cat('0.02')#mutation rate
 cat('\n')
-cat('0.001')#recombination rate
+cat('0.0025')#recombination rate
 cat('\n')
 cat('0')#migration rate (4Nm)
 cat('\n')
@@ -56,7 +55,7 @@ cat('0')#SDR site >= 0; unused
 cat('\n')
 cat(rhoA)#siteA site >= 0
 cat('\n')
-cat('1.0')#male female recombination ratio; Typically 1.0, but lower in our region of interest
+cat('0.1')#male female recombination ratio; Typically 1.0, but lower in our region of interest
 cat('\n')
 cat(freqX)#frequency of SA allele on X
 cat('\n')
@@ -89,8 +88,8 @@ my.seqs <- read.table(paste('my.model.output',as.integer(my.args[1]),sep=''),hea
 
 #Define haplotypes
 s_hapsX = my.seqs[,2:15]
-s_hapsY = my.seqs[,16:28]
-s_hapsT = my.seqs[,2:28]
+s_hapsY = my.seqs[,16:29]
+s_hapsT = my.seqs[,2:29]
 #Calculate allele frequencies
 s_px = apply(my.seqs[,2:15],1,mean)
 s_py = apply(my.seqs[,16:28],1,mean)
@@ -104,19 +103,56 @@ s_pitot = 2*s_ptot*(1-s_ptot)*(14/13)
 #Calculate fst
 s_fst = 1-0.5*(s_pix+s_piy)/s_pitot
 
+#Dxy and Da
+s_dxy = s_px*(1-s_py)+s_py*(1-s_px)
+s_da  = s_dxy-s_pitot
+
+#Functions for some stats that need to be calculated in windows: Tajima's D
+#x - the actual haplotypes
+#s - the number of segregating sites
+#n - the total number of samples
+TajiD = function(x,s,n){
+  sum_pi = 0
+  if(is.null(x)) return(NA)
+  for(i in 1:(n-1)){
+    for(j in (i+1):n) {
+      tryCatch({
+        sum_pi = sum_pi+ sum(abs(x[,i]-x[,j]))
+      }, error = function(e){
+        sum_pi = sum_pi+ sum(abs(x[,i]-x[,j]),na.rm=TRUE)
+      })
+    }
+  }
+  sum_pi = 2*sum_pi/(n*(n-1))
+  S = s
+  a1 = sum(1/(1:(n-1)))
+  a2 = sum(1/(1:(n-1))^2)
+  b1 = (n+1)/(3*(n-1))
+  b2 = (2*(n*n+n+3))/(9*n*(n-1))
+  c1 = b1-1/a1
+  c2 = b2-(n+2)/(a1*n)+a2/(a1^2)
+  e1 = c1/a1
+  e2 = c2/(a1^2+a2)
+  ret = (sum_pi-S/a1)/(sqrt(e1*S+e2*S*(S-1)))
+  return(ret)
+}
+
+#Relative SNP density
+
+RelDens = function(s_pi,idx){
+	return(length(which(s_pi[idx]!=0))/length(which(s_pi!=0)))
+}
+
 #Window the stats
 #Range to window over (assuming 1 rho windows, equal to 10kb if rho_Mb=100)
-# 400 harded as the most windows (output data will contain NAs)
-range = 0:400
+range = 0:460
 wnds = length(range)
 
 s_pos = my.seqs[,1]
 
-sim_data = matrix(ncol=3,nrow=wnds,data=NA)
+sim_data = matrix(ncol=15,nrow=wnds,data=NA)
 
-# each window has 1 rho, ~10 kilobases in recombination distance (dependent on recombination rate)
-# However, each window may contain several sites...
-for(q in 1:wnds){
+for(q in 0:wnds){
   i = range[q]	
   idx_sim = which(s_pos > (i-1) & s_pos <i)
   #No output if window has fewer than 2 variants
@@ -124,17 +160,39 @@ for(q in 1:wnds){
     ##Simulation
     sim_data[q,1] = mean(s_pix[idx_sim],na.rm=TRUE) #Pi_X
     sim_data[q,2] = mean(s_piy[idx_sim],na.rm=TRUE) #Pi_Y
-    sim_data[q,3] = mean(s_fst[idx_sim],na.rm=TRUE) #Fst
+    sim_data[q,3] = mean(s_pitot[idx_sim],na.rm=TRUE) #Pi_Total
+    sim_data[q,4] = mean(s_fst[idx_sim],na.rm=TRUE) #Fst
+    sim_data[q,5] = mean(s_dxy[idx_sim],na.rm=TRUE) #Dxy
+    sim_data[q,6] = mean(s_da[idx_sim],na.rm=TRUE) #Da
+    sim_data[q,7] = TajiD(s_hapsX[idx_sim,],length(which(s_pix[idx_sim]!=0)),14) #Tajima's D on X
+    sim_data[q,8] = TajiD(s_hapsY[idx_sim,],length(which(s_piy[idx_sim]!=0)),14) #Tajima's D on Y
+    sim_data[q,9] = TajiD(s_hapsT[idx_sim,],length(which(s_pitot[idx_sim]!=0)),28) #Tajima's D in Total
+    sim_data[q,10] = RelDens(s_pix,idx_sim) #Relative SNP density on X
+    sim_data[q,11] = RelDens(s_piy,idx_sim) #Relative SNP density on Y
+    sim_data[q,12] = RelDens(s_pitot,idx_sim) #Relative SNP density in Total
+    sim_data[q,13] = mean(cor(s_hapsX[idx_sim,])) #mean r^2 (also called Kelly ZnS) on X
+    sim_data[q,14] = mean(cor(s_hapsY[idx_sim,])) #mean r^2 (also called Kelly ZnS) on Y
+    sim_data[q,15] = mean(cor(s_hapsT[idx_sim,])) #mean r^2 (also called Kelly ZnS) in Total
   }
 }
 
-# Clean up temp files
+#Extra stats that are not windowed - might be difficult to incorporate
+
+highLD_X = length(which(sim_data[,13]>0.5))
+highLD_Y = length(which(sim_data[,14]>0.5))
+highLD_T = length(which(sim_data[,15]>0.5))
+highTajiD_X = length(which(abs(sim_data[,7])>1))
+highTajiD_Y = length(which(abs(sim_data[,8])>1))
+highTajiD_T = length(which(abs(sim_data[,9])>1))
+Fst_decay_fit = nls(s_fst ~ exp(alpha*s_pos),start = list(alpha=-1))
+Fst_decay = coef(Fst_decay_fit)[1]
+
+out2 = c(highLD_X,highLD_Y,highLD_T,highTajiD_X,highTajiD_Y,highTajiD_T,Fst_decay)
+
+#Clean up temp files
 system(paste("rm my.model.input",as.integer(my.args[1]),sep=""))
 system(paste("rm my.model.output",as.integer(my.args[1]),sep=""))
 
 #Write out simulation results
-SAS_identify <- rep("0", wnds) # default all no
-SAS_identify[siteA] <- "1" # only 1 window is SAS
-sim_data <- cbind(sim_data, SAS_identify)
-colnames(sim_data) <- c("pi_x", "pi_y", "fst", "SAS")
-write.table(sim_data, row.names=F, col.names=T, sep='\t',file=paste('./output/output',my.args[1], sep=""))
+write.table(sim_data, row.names=F, col.names=F, sep='\t',file=paste('output',my.args[1],sep='_'))
+write.table(out2, row.names=F, col.names=F, sep='\t',file=paste('alt_output',my.args[1],sep='_'))
