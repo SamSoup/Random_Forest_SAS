@@ -1,0 +1,5 @@
+There were 50 or more warnings (use warnings() to see the first 50)
+Error in numericDeriv(form[[3L]], names(ind), env) : 
+  Missing value or an infinity produced when evaluating the model
+Calls: nls ... <Anonymous> -> assign -> assign -> getRHS -> numericDeriv
+Execution halted
