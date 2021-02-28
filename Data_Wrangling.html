@@ -14539,7 +14539,7 @@ After dropping, we have 6500 samples left
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="Test-Data">Test Data<a class="anchor-link" href="#Test-Data">&#182;</a></h2><p>I then asked the simulation for a 80-20 split, 1000 sample test set that's not used in the model building process at all for an earnest attempt at out-of-sample prediction error.</p>
+<h2 id="Small-Test-Data-Batch">Small Test Data Batch<a class="anchor-link" href="#Small-Test-Data-Batch">&#182;</a></h2><p>I then asked the simulation for a 80-20 split, 1000 sample test set that's not used in the model building process at all for an earnest attempt at out-of-sample prediction error.</p>
 <h2 id="Caution">Caution<a class="anchor-link" href="#Caution">&#182;</a></h2><p>Attribute 12-15 has been Dropped due to presence of NaNs</p>
 
 </div>
@@ -14693,6 +14693,178 @@ After dropping, we have 647 samples left
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># store the result into a numpy object</span>
 <span class="n">np</span><span class="o">.</span><span class="n">savez_compressed</span><span class="p">(</span><span class="s1">&#39;./data/test.npz&#39;</span><span class="p">,</span> <span class="n">X_test</span><span class="o">=</span><span class="n">X_test_clean</span><span class="p">,</span> <span class="n">y_test</span><span class="o">=</span><span class="n">y_test_clean</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="Large-Test-Data-Batch">Large Test Data Batch<a class="anchor-link" href="#Large-Test-Data-Batch">&#182;</a></h2><p>I then asked the simulation for a 80-20 split, 10000 sample test set that's not used in the model building process at all for an earnest attempt at out-of-sample prediction error.</p>
+<h2 id="Caution">Caution<a class="anchor-link" href="#Caution">&#182;</a></h2><p>Attribute 12-15 has been Dropped due to presence of NaNs</p>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[12]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">samples_test_large</span> <span class="o">=</span> <span class="mi">10000</span>
+<span class="n">y_test_large</span> <span class="o">=</span> <span class="n">read_labels</span><span class="p">(</span><span class="s2">&quot;./Generate_Test_More_Data/input/label.csv&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">y_test_large</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">y_test_large</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>[[&#39;No&#39;]
+ [&#39;Yes&#39;]
+ [&#39;No&#39;]
+ [&#39;Yes&#39;]
+ [&#39;No&#39;]]
+(10000, 1)
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[13]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">X_test_large</span> <span class="o">=</span> <span class="n">read_samples</span><span class="p">(</span><span class="n">samples_test_large</span><span class="p">,</span> 
+                      <span class="s2">&quot;./Generate_Test_More_Data/output/output_1&quot;</span><span class="p">,</span> 
+                      <span class="s2">&quot;./Generate_Test_More_Data/output/output_&quot;</span><span class="p">,</span> 
+                      <span class="n">keep_col</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">12</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">X_test_large</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">X_test_large</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Time taken to concatenate files: 310.8872334957123
+[[7.65567766e-02 0.00000000e+00 4.39238859e-01 ... 6.36435959e-04
+  0.00000000e+00 1.89334175e-03]
+ [5.92289067e-02 1.03685303e-02 4.56698912e-01 ... 9.54653938e-04
+  2.70929287e-04 3.72357210e-03]
+ [1.99537305e-02 1.77754354e-02 5.08410945e-01 ... 3.18217979e-04
+  5.41858575e-04 4.79646576e-03]
+ ...
+ [1.86813187e-01 1.45289030e-01 1.74907671e-01 ... 6.36435959e-04
+  6.77323219e-04 6.31113916e-04]
+ [9.15750916e-02 2.54893036e-01 1.86134853e-01 ... 2.38663484e-04
+  5.41858575e-04 3.78668350e-04]
+ [2.26059655e-01 1.20163860e-01 1.80647884e-01 ... 5.56881464e-04
+  2.70929287e-04 4.41779741e-04]]
+(10000, 460, 12)
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[14]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">X_test_large_clean</span><span class="p">,</span> <span class="n">y_test_large_clean</span><span class="p">,</span> <span class="n">samples_test_large</span> <span class="o">=</span> <span class="n">clean_data</span><span class="p">(</span>
+    <span class="n">X_test_large</span><span class="p">,</span> <span class="n">y_test_large</span><span class="p">,</span> <span class="n">samples_test_large</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">X_test_large_clean</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">y_test_large_clean</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>We got NaNs, identifying location of NaNs...
+Attributes with NaNs are: {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
+There are  3211  Samples with NANs
+We got Infinities, identifying location of Infs...
+Attributes with Infs are: {7}
+There are  732  Samples with Infs
+There are a total of 3501 containing Infs or NaNs
+Less than 50.0% of Samples, dropping.
+After dropping, we have 6499 samples left
+
+
+(6499, 460, 12)
+(6499, 1)
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[16]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># store the result into a numpy object</span>
+<span class="n">np</span><span class="o">.</span><span class="n">savez_compressed</span><span class="p">(</span><span class="s1">&#39;./data/test_large.npz&#39;</span><span class="p">,</span> 
+                    <span class="n">X_test_large</span><span class="o">=</span><span class="n">X_test_large_clean</span><span class="p">,</span> 
+                    <span class="n">y_test_large</span><span class="o">=</span><span class="n">y_test_large_clean</span><span class="p">)</span>
 </pre></div>
 
      </div>
