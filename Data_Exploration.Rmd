@@ -1,0 +1,82 @@
+---
+title: "Data_Exploration"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(reticulate)
+```
+
+```{python}
+import numpy as np
+
+load_train = np.load('./data/train.npz', allow_pickle=True)
+load_test = np.load('./data/test_large.npz', allow_pickle=True)
+X_train, y_train = load_train['X_train'], load_train['y_train']
+X_test, y_test = load_test['X_test_large'], load_test['y_test_large']
+
+# extract the 4th column (Fst) of each dataframe
+X_train = X_train[:, :, 3]
+```
+
+sudo apt-get install r-base-dev xml2 libxml2-dev libssl-dev libcurl4-openssl-dev unixodbc-dev
+
+```{r}
+library(tidyverse)
+
+X_train_Fst <- py$X_train %>% as.data.frame() %>% mutate(label = py$y_train)
+SAS_end <- nrow(X_train_Fst %>% filter(label == "Yes"))
+noSAS_end <- nrow(X_train_Fst) - SAS_end
+sprintf("There are %d SAS samples", SAS_end)
+sprintf("There are %d Non-SAS samples", noSAS_end)
+
+plot_fst <- function(filter, sample) {
+  df_plot <- X_train_Fst %>% filter(label == filter) %>% .[sample, ] %>% 
+    pivot_longer(cols = -label, names_to = "Window", 
+                 names_prefix = "V", values_to = "Fst") %>% 
+    select(-label) %>% 
+    mutate(Window = as.numeric(Window))
+
+  ggplot(df_plot, aes(Window, Fst, group = 1)) + 
+    geom_point() + 
+    ggtitle(paste("Sample", sample, 
+                  "out of", nrow(X_train_Fst %>% filter(label == filter)), 
+                  "label=", filter)) + 
+    theme(
+      plot.title = element_text(hjust = 0.5)
+    )
+}
+```
+
+For samples with SAS, the expected behavior is that around site 75-250 there should be peaks of Fst
+```{r}
+sel <- sample(1:SAS_end, 10)
+for (i in sel) {
+  print(plot_fst(filter = "Yes", sample = i))
+}
+```
+
+Problem: Non-SAS samples also exhibit peaks!!
+```{r}
+sel <- sample(1:noSAS_end, 10)
+for (i in sel) {
+  print(plot_fst(filter = "No", sample = i))
+}
+```
+
+```{r}
+filter <- "No"
+sample <- 1
+df_plot <- X_train_Fst %>% filter(label == filter) %>% .[sample, ] %>% 
+  pivot_longer(cols = -label, names_to = "Window", 
+               names_prefix = "V", values_to = "Fst") %>% 
+  mutate(Window = as.numeric(Window))
+ggplot(df_plot, aes(Window, Fst, group = 1)) + 
+  geom_point() + 
+  ggtitle(paste("Sample", sample, "label=", filter)) + 
+  theme(
+    plot.title = element_text(hjust = 0.5)
+  )
+```
+
