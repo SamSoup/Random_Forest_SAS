@@ -1,0 +1,99 @@
+---
+title: "EDA"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+library(reticulate)
+library(tidyverse)
+library(colorspace)
+library(cowplot)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{python }
+import numpy as np
+load_train = np.load('./data/trainNew.npz', allow_pickle=True)
+X_train, y_train = load_train['X_train'], load_train['y_train']
+
+```
+```{r}
+df <- py$X_train
+labels <- py$y_train
+
+samples <- nrow(df)
+rows_per_sample <- nrow(df[1,,])
+total_sample <- samples*2
+```
+
+```{r}
+Fst_SAS = c()
+MSE_SAS = c()
+
+Fst_noSAS = c()
+MSE_noSAS = c()
+for (i in 1:samples) {
+  if (labels[samples+i] == "Yes") {
+    Fst_SAS <- c(Fst_SAS, df[i, 1:rows_per_sample, 1])
+    MSE_SAS <- c(MSE_SAS, df[i, 1:rows_per_sample, 2])
+  }
+  else {
+    Fst_noSAS = c(Fst_noSAS, df[i, 1:rows_per_sample, 1])
+    MSE_noSAS = c(MSE_noSAS, df[i, 1:rows_per_sample, 2])
+  }
+}
+
+```
+
+```{r}
+noSAS_df <- data.frame(
+  Fst_noSAS, MSE_noSAS
+)
+
+noSAS_df %>% glimpse()
+```
+
+```{r}
+SAS_df <- data.frame(
+  Fst_SAS, MSE_SAS
+)
+
+SAS_df %>% glimpse()
+```
+
+```{r}
+ggplot(noSAS_df, aes(MSE_noSAS, Fst_noSAS)) + 
+  stat_density_2d(aes(fill = ..level..), geom = "polygon", 
+                  color = darken("#0072B2", .2), size = .3, binwidth = 0.8) + 
+  scale_fill_gradient(low = desaturate(lighten("#0072B2", .9), .6), 
+                    high = desaturate(lighten("#0072B2", .6), .6), guide = "none") + 
+  scale_y_continuous(
+    breaks = seq(0, 1, 0.1),
+    labels = seq(0, 1, 0.1)
+  ) +
+  scale_x_continuous(
+    breaks = seq(0, 1, 0.1),
+    labels = seq(0, 1, 0.1)
+  ) + 
+  theme_minimal_grid()
+```
+
+```{r}
+ggplot(SAS_df, aes(MSE_SAS, Fst_SAS)) + 
+  stat_density_2d(aes(fill = ..level..), geom = "polygon",
+                  color = darken("#0072B2", .2), size = .3, binwidth = 0.8) + 
+  scale_fill_gradient(low = desaturate(lighten("#0072B2", .9), .6), 
+                      high = desaturate(lighten("#0072B2", .6), .6), guide = "none") + 
+  scale_y_continuous(
+    breaks = seq(0, 1, 0.1),
+    labels = seq(0, 1, 0.1)
+  ) + 
+  scale_x_continuous(
+    breaks = seq(0, 1, 0.1),
+    labels = seq(0, 1, 0.1)
+  ) + 
+  theme_minimal_grid()
+```
+
